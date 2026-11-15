@@ -69,71 +69,84 @@ function onInputChange(event) {
     document.querySelector(`#flipGrid .cell[data-index="${index}"]`).value = flipDigit(box.value);
 }
 
-function getEnteredDigits() {
-    return Array.from(document.querySelectorAll('#inputGrid .cell'))
-        .map(input => input.value)
+// Reads the digits that are actually typed into one chart
+function getChartDigits(gridId) {
+    return Array.from(document.querySelectorAll(`#${gridId} .cell`))
+        .map(cell => cell.value)
         .filter(value => value !== '')
         .map(value => parseInt(value, 10));
 }
 
-// Builds every possible combination of the entered digits, scores each one
-// by how often its digits appear, and returns the top 40 (no repeats)
-function buildCombinations(length) {
-    const digits = getEnteredDigits();
+// Builds combinations using ONLY the digits in this chart.
+// A digit can never be used more times than it appears in the chart.
+// Results are ranked by how often their digits appear in the chart, and the top 40 are returned.
+function buildCombinations(digits, length) {
     const counts = {};
     digits.forEach(d => counts[d] = (counts[d] || 0) + 1);
 
-    const uniqueDigits = Object.keys(counts).map(Number);
+    const uniqueDigits = Object.keys(counts).map(Number).sort((a, b) => a - b);
+    const remaining = { ...counts };
+    const current = [];
     const all = [];
 
-    function build(prefix) {
-        if (prefix.length === length) {
-            const score = prefix.reduce((sum, d) => sum + counts[d], 0);
-            all.push({ combo: prefix.slice(), score: score });
+    function walk() {
+        if (current.length === length) {
+            const score = current.reduce((sum, d) => sum + counts[d], 0);
+            all.push({ combo: current.slice(), score: score });
             return;
         }
-        uniqueDigits.forEach(d => {
-            prefix.push(d);
-            build(prefix);
-            prefix.pop();
-        });
+        for (const d of uniqueDigits) {
+            if (remaining[d] > 0) {
+                remaining[d]--;
+                current.push(d);
+                walk();
+                current.pop();
+                remaining[d]++;
+            }
+        }
     }
 
     if (uniqueDigits.length > 0) {
-        build([]);
+        walk();
     }
 
-    all.sort((a, b) => b.score - a.score || a.combo.join('').localeCompare(b.combo.join('')));
+    all.sort((a, b) =>
+        b.score - a.score || a.combo.join('').localeCompare(b.combo.join(''))
+    );
 
-    const seen = new Set();
-    const combos = [];
-    for (const item of all) {
-        const key = item.combo.join('');
-        if (seen.has(key)) continue;
-        seen.add(key);
-        combos.push(item.combo);
-        if (combos.length === 40) break;
+    return all.slice(0, 40).map(item => item.combo);
+}
+
+// Renders one chart's results as its own section
+function renderChartSection(title, combos) {
+    let html = `<h3>${title} (${combos.length})</h3>`;
+    if (combos.length === 0) {
+        html += '<p class="message">No numbers in this chart yet.</p>';
+        return html;
     }
-    return combos;
+    combos.forEach(combo => {
+        html += `<p>${combo.join(' ')}</p>`;
+    });
+    return html;
 }
 
 function showResults(length) {
     const results = document.getElementById('results');
-    const label = length === 3 ? 'Pick Three' : 'Pick Four';
+    const gameLabel = length === 3 ? 'Pick Three' : 'Pick Four';
 
-    if (getEnteredDigits().length === 0) {
+    const inputDigits = getChartDigits('inputGrid');
+    const mirrorDigits = getChartDigits('mirrorGrid');
+    const flipDigits = getChartDigits('flipGrid');
+
+    if (inputDigits.length === 0 && mirrorDigits.length === 0 && flipDigits.length === 0) {
         results.innerHTML = '<p class="message">Enter some numbers in the grid first.</p>';
         return;
     }
 
-    const combos = buildCombinations(length);
-    let html = `<h3>${label} Combinations (${combos.length})</h3>`;
-    combos.forEach(combo => {
-        const line = combo.join(' ');
-        const mirrored = combo.map(d => mirrorDigit(d)).join(' ');
-        const flipped = combo.map(d => flipDigit(d)).join(' ');
-        html += `<p>${line}   |   <span class="mirror-text">Mirror: ${mirrored}</span>   |   <span class="mirror-text">Flip: ${flipped}</span></p>`;
-    });
+    let html = `<h2>${gameLabel} Results</h2>`;
+    html += renderChartSection('Your Numbers', buildCombinations(inputDigits, length));
+    html += renderChartSection('Mirror Numbers', buildCombinations(mirrorDigits, length));
+    html += renderChartSection('Flip Numbers', buildCombinations(flipDigits, length));
     results.innerHTML = html;
 }
 
