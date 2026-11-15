@@ -1,0 +1,59 @@
+body {
+    background-color: #000;
+    color: #fff;
+    font-family: Arial, sans-serif;
+    overflow-x: hidden;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: center;
+}
+
+h1, h2 {
+    color: #00FF00; /* Green color for headings */
+}
+
+.grids {
+    display: flex;
+    justify-content: space-around;
+    margin: 20px 0;
+}
+
+.grid {
+    border: 1px solid #00FF00;
+    padding: 10px;
+    width: 200px;
+}
+
+.numbers {
+    display: grid;
+    grid-template-columns: repeat(5, 35px);
+    grid-gap: 5px;
+}
+
+.numberInput {
+    background-color: #333;
+    color: #fff;
+    border: none;
+    width: 35px;
+    text-align: center;
+}
+
+.controls {
+    margin: 20px 0;
+}
+
+button {
+    background-color: #00FF00;
+    color: #000;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+#results {
+    margin-top: 20px;
+}
