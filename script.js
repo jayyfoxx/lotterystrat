@@ -22,6 +22,8 @@
   let size = 3;
   let values = []; // strings '' or '0'..'9' for "Your Numbers"
   let lastResults = null;
+  let selected = 0; // which "Your Numbers" box is active
+  const isDiag = i => Math.floor(i / size) === i % size;
 
   const $ = id => document.getElementById(id);
   const yourGrid = $('yourGrid'), mirrorGrid = $('mirrorGrid'), flipGrid = $('flipGrid');
@@ -56,19 +58,31 @@
       inp.inputMode = 'numeric';
       inp.autocomplete = 'off';
       inp.maxLength = 1;
-      inp.className = 'cell';
+      inp.className = 'cell' + (isDiag(i) ? ' diag' : '');
       inp.dataset.index = i;
-      inp.setAttribute('aria-label', `Your number, cell ${i + 1}`);
+      inp.setAttribute('aria-label', `Your number, row ${Math.floor(i / size) + 1}, column ${i % size + 1}`);
       inp.value = values[i];
       yourGrid.appendChild(inp);
 
       [mirrorGrid, flipGrid].forEach(g => {
         const d = document.createElement('div');
-        d.className = 'cell derived';
+        d.className = 'cell derived' + (isDiag(i) ? ' diag' : '');
         d.dataset.index = i;
         g.appendChild(d);
       });
     }
+    if (selected >= total) selected = 0;
+    markSelected();
+    refreshDerived();
+  }
+
+  function markSelected() {
+    [...yourGrid.children].forEach((c, i) => c.classList.toggle('selected', i === selected));
+  }
+
+  function setCell(i, d) {
+    values[i] = d;
+    yourGrid.children[i].value = d;
     refreshDerived();
   }
 
@@ -87,28 +101,23 @@
 
   function focusCell(i) {
     const c = yourGrid.children[i];
-    if (c) { c.focus(); c.select(); }
+    if (c) { selected = i; markSelected(); c.focus(); c.select(); }
   }
 
+  // Typing fills the box you clicked and stays there — no auto-jumping.
   yourGrid.addEventListener('input', e => {
     const box = e.target, i = +box.dataset.index;
-    const digits = box.value.replace(/[^0-9]/g, '');
-    const d = digits.slice(-1);
-    box.value = d;
-    values[i] = d;
-    refreshDerived();
-    if (d && i < values.length - 1) focusCell(i + 1);
+    const d = box.value.replace(/[^0-9]/g, '').slice(-1);
+    setCell(i, d);
+    box.select();
   });
 
   yourGrid.addEventListener('keydown', e => {
     const box = e.target, i = +box.dataset.index;
     if (!box.classList.contains('cell')) return;
-    if (e.key === 'Backspace' && box.value === '' && i > 0) {
+    if (e.key === 'Backspace' || e.key === 'Delete') {
       e.preventDefault();
-      values[i - 1] = '';
-      yourGrid.children[i - 1].value = '';
-      refreshDerived();
-      focusCell(i - 1);
+      setCell(i, '');
     } else if (e.key === 'ArrowRight') { e.preventDefault(); focusCell(Math.min(i + 1, values.length - 1)); }
     else if (e.key === 'ArrowLeft') { e.preventDefault(); focusCell(Math.max(i - 1, 0)); }
     else if (e.key === 'ArrowDown') { e.preventDefault(); if (i + size < values.length) focusCell(i + size); }
@@ -116,7 +125,22 @@
     else if (e.key === 'Enter') { e.preventDefault(); generateAll(); }
   });
 
-  yourGrid.addEventListener('focusin', e => { if (e.target.select) e.target.select(); });
+  yourGrid.addEventListener('focusin', e => {
+    if (!e.target.classList.contains('cell')) return;
+    selected = +e.target.dataset.index;
+    markSelected();
+    e.target.select();
+  });
+
+  // On-screen keypad: fills the selected box, selection stays put.
+  const keypad = $('keypad');
+  keypad.addEventListener('mousedown', e => e.preventDefault()); // keep focus on the box
+  keypad.addEventListener('click', e => {
+    const k = e.target.dataset && e.target.dataset.k;
+    if (k === undefined) return;
+    setCell(selected, k === 'del' ? '' : k);
+    markSelected();
+  });
 
   yourGrid.addEventListener('paste', e => {
     const box = e.target, start = +box.dataset.index;
@@ -132,7 +156,7 @@
       i++;
     }
     refreshDerived();
-    focusCell(Math.min(i, values.length - 1));
+    focusCell(start);
   });
 
   // ---------- True randomness ----------

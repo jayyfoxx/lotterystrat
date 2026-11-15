@@ -115,6 +115,20 @@ input.cell:focus { outline: none; border-color: var(--yellow); background: var(-
 input.cell.filled { border-color: rgba(255,214,10,0.45); }
 .cell.derived { color: #d9d9d4; background: rgba(0,0,0,0.35); }
 .cell.derived.filled { color: var(--yellow); border-color: rgba(255,214,10,0.25); }
+/* Diagonal (the drawn number), top-left to bottom-right */
+.cell.diag { background: rgba(46, 204, 113, 0.2); border-color: rgba(46, 204, 113, 0.65); box-shadow: inset 0 0 14px rgba(46, 204, 113, 0.25); }
+.cell.diag.filled, input.cell.diag { color: #7CF5A8; }
+input.cell { cursor: pointer; }
+input.cell.selected { outline: none; border-color: var(--yellow); box-shadow: 0 0 0 3px rgba(255,214,10,0.35); transform: scale(1.04); }
+input.cell.diag.selected { background: rgba(46, 204, 113, 0.3); }
+.legend { display: flex; align-items: center; gap: 6px; font: 500 11px var(--mono); color: #7CF5A8; margin-top: 12px; }
+.legend i { width: 12px; height: 12px; border-radius: 3px; background: rgba(46,204,113,0.35); border: 1px solid rgba(46,204,113,0.8); }
+
+/* Keypad */
+.keypad { display: grid; grid-template-columns: repeat(3, 56px); gap: 6px; margin-top: 14px; }
+.keypad .del { grid-column: span 2; }
+.keypad button { padding: 0; height: 40px; font: 800 18px var(--mono); border-radius: 10px; }
+.keypad button.del { font-size: 15px; color: var(--muted); }
 
 /* Actions */
 .actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 22px 0 30px; }

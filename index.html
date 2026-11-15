@@ -30,8 +30,15 @@
   <section class="charts">
     <div class="panel chart input-chart">
       <div class="chart-head"><h2>Your Numbers</h2><span class="tag">INPUT</span></div>
-      <p class="note">Type, paste, or use arrow keys</p>
+      <p class="note">Click any box, then type or tap a number</p>
       <div class="grid" id="yourGrid"></div>
+      <div class="legend"><i></i>Drawn number (diagonal)</div>
+      <div class="keypad" id="keypad">
+        <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
+        <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
+        <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button>
+        <button data-k="0">0</button><button class="del" data-k="del" aria-label="Erase box">⌫ Erase</button>
+      </div>
     </div>
     <div class="panel chart">
       <div class="chart-head"><h2>Mirror Numbers</h2><span class="tag">+5</span></div>
