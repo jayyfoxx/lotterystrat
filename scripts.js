@@ -17,7 +17,6 @@ function getSize() {
     return parseInt(selected.value, 10);
 }
 
-// Builds a fresh input, mirror, and flip grid for the chosen mode
 function buildGrids() {
     const size = getSize();
     const inputGrid = document.getElementById('inputGrid');
@@ -59,7 +58,6 @@ function buildGrids() {
     document.getElementById('results').innerHTML = '';
 }
 
-// Keeps only a single digit 0-9 and updates the mirror and flip boxes in the same position
 function onInputChange(event) {
     const box = event.target;
     box.value = box.value.replace(/[^0-9]/g, '').slice(0, 1);
@@ -69,7 +67,6 @@ function onInputChange(event) {
     document.querySelector(`#flipGrid .cell[data-index="${index}"]`).value = flipDigit(box.value);
 }
 
-// Reads the digits that are actually typed into one chart
 function getChartDigits(gridId) {
     return Array.from(document.querySelectorAll(`#${gridId} .cell`))
         .map(cell => cell.value)
@@ -77,9 +74,6 @@ function getChartDigits(gridId) {
         .map(value => parseInt(value, 10));
 }
 
-// Builds combinations using ONLY the digits in this chart.
-// A digit can never be used more times than it appears in the chart.
-// Results are ranked by how often their digits appear in the chart, and the top 40 are returned.
 function buildCombinations(digits, length) {
     const counts = {};
     digits.forEach(d => counts[d] = (counts[d] || 0) + 1);
@@ -117,36 +111,37 @@ function buildCombinations(digits, length) {
     return all.slice(0, 40).map(item => item.combo);
 }
 
-// Groups combinations that use the same digits (any order) and returns
-// a Set of the combination keys that appear more than once
-function findRepeatedKeys(combos) {
+function buildColumn(title, combos) {
+    // Colors for repeated groups
+    const palette = ['#FF5733', '#33FF57', '#3357FF', '#FF33A1', '#FFD700', '#FF8C00', '#8A2BE2', '#00CED1', '#FF4500', '#ADFF2F'];
     const groupCounts = {};
+    const groupColorMap = {};
+    let colorIndex = 0;
+
+    // First pass: Count how often each group of digits appears
     combos.forEach(combo => {
         const groupKey = [...combo].sort((a, b) => a - b).join('');
         groupCounts[groupKey] = (groupCounts[groupKey] || 0) + 1;
     });
 
-    const repeated = new Set();
-    combos.forEach(combo => {
-        const groupKey = [...combo].sort((a, b) => a - b).join('');
-        if (groupCounts[groupKey] > 1) {
-            repeated.add(combo.join(''));
-        }
-    });
-    return repeated;
-}
-
-// Builds one column of the side-by-side results
-function buildColumn(title, combos) {
     let html = `<div class="result-column"><h3>${title}</h3>`;
     if (combos.length === 0) {
         html += '<p class="message">No numbers yet.</p>';
     } else {
-        const repeated = findRepeatedKeys(combos);
         combos.forEach(combo => {
-            const key = combo.join('');
-            const cls = repeated.has(key) ? ' class="repeat-highlight"' : '';
-            html += `<p${cls}>${combo.join(' ')}</p>`;
+            const groupKey = [...combo].sort((a, b) => a - b).join('');
+            
+            if (groupCounts[groupKey] > 1) {
+                // Assign a color if it's a repeat and doesn't have one yet
+                if (!groupColorMap[groupKey]) {
+                    groupColorMap[groupKey] = palette[colorIndex % palette.length];
+                    colorIndex++;
+                }
+                const color = groupColorMap[groupKey];
+                html += `<p class="repeat-highlight" style="color: ${color}; border-left-color: ${color};">${combo.join(' ')}</p>`;
+            } else {
+                html += `<p>${combo.join(' ')}</p>`;
+            }
         });
     }
     html += '</div>';
@@ -176,7 +171,6 @@ function showResults(length) {
     results.innerHTML = html;
 }
 
-// Resets all grids to empty and clears the results
 function clearAll() {
     document.querySelectorAll('#inputGrid .cell, #mirrorGrid .cell, #flipGrid .cell')
         .forEach(cell => cell.value = '');
@@ -196,7 +190,6 @@ document.querySelectorAll('input[name="gameType"]').forEach(radio => {
 
 buildGrids();
 
-// Service worker registration
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('service-worker.js')
