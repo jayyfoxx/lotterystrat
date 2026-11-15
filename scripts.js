@@ -5,26 +5,22 @@ function mirrorNumber(num) {
     return String((n + 5) % 10);
 }
 
-// Fills the right grid with the mirror of every left-grid value
-function generateMirrorNumbers() {
-    const inputs = Array.from(document.querySelectorAll('#inputGrid .numberInput'));
-    const mirrorInputs = Array.from(document.querySelectorAll('#mirrorGrid .numberInput'));
+function generateMirrorNumbers(inputSize) {
+    const inputs = Array.from(document.querySelectorAll(`#inputGrid .numberInput`));
+    const mirrorInputs = Array.from(document.querySelectorAll(`#mirrorGrid .numberInput`));
 
     mirrorInputs.forEach((box, index) => {
         box.value = mirrorNumber(inputs[index].value);
     });
 }
 
-// Returns the list of digits entered in the left grid, in reading order
-function getInputDigits() {
-    return Array.from(document.querySelectorAll('#inputGrid .numberInput'))
-        .map(input => input.value)
-        .filter(value => value !== '');
+function getInputDigits(size) {
+    const inputs = Array.from(document.querySelectorAll(`#inputGrid .numberInput`));
+    return inputs.slice(0, size * size).map(input => input.value).filter(value => value !== '');
 }
 
-// Builds the most common combinations from the entered digits
 function generateCombinations(length) {
-    const digits = getInputDigits().map(d => parseInt(d, 10));
+    const digits = getInputDigits(length).map(d => parseInt(d, 10));
     const counts = {};
     digits.forEach(d => counts[d] = (counts[d] || 0) + 1);
 
@@ -43,7 +39,6 @@ function generateCombinations(length) {
     return results;
 }
 
-// Shows the mirrored version of each generated combination
 function mirrorCombinations(results) {
     return results.map(line =>
         line.split(' ').map(d => mirrorNumber(d)).join(' ')
@@ -52,12 +47,7 @@ function mirrorCombinations(results) {
 
 function updateResults(results, mirrored, containerId) {
     const container = document.getElementById(containerId);
-    container.innerHTML = '';
-
-    const title = document.createElement('h3');
-    title.textContent = 'Generated Numbers';
-    container.appendChild(title);
-
+    container.innerHTML = '<h3>Generated Numbers</h3>';
     results.forEach((line, i) => {
         const p = document.createElement('p');
         p.textContent = `${line}   |   Mirror: ${mirrored[i]}`;
@@ -65,19 +55,46 @@ function updateResults(results, mirrored, containerId) {
     });
 }
 
-function generatePickThree() {
-    generateMirrorNumbers();
-    const results = generateCombinations(3);
-    updateResults(results, mirrorCombinations(results), 'pickThreeResults');
+function generateNumbers() {
+    const gameType = document.querySelector('input[name="gameType"]:checked').value;
+    const size = gameType === 'pick3' ? 3 : 4;
+
+    generateMirrorNumbers(size * size);
+    const results = generateCombinations(size);
+    updateResults(results, mirrorCombinations(results), 'generatedResults');
 }
 
-function generatePickFour() {
-    generateMirrorNumbers();
-    const results = generateCombinations(4);
-    updateResults(results, mirrorCombinations(results), 'pickFourResults');
+function toggleGrids() {
+    const gameType = document.querySelector('input[name="gameType"]:checked').value;
+    const size = gameType === 'pick3' ? 3 : 4;
+    const inputContainer = document.getElementById('inputNumbers');
+    const mirrorContainer = document.getElementById('mirrorNumbers');
+
+    inputContainer.innerHTML = '';
+    mirrorContainer.innerHTML = '';
+
+    for (let i = 0; i < size * size; i++) {
+        inputContainer.insertAdjacentHTML('beforeend', '<input type="number" min="0" max="9" class="numberInput" style="width: 50px;" />');
+    }
+    for (let i = 0; i < size * size; i++) {
+        mirrorContainer.insertAdjacentHTML('beforeend', '<input type="text" readonly class="numberInput" style="width: 50px;" />');
+    }
+
+    document.querySelectorAll('#inputGrid .numberInput').forEach(input => {
+        input.addEventListener('input', () => generateMirrorNumbers(size * size));
+    });
 }
 
-// Keep the mirror grid updated as soon as a left-grid value changes
-document.querySelectorAll('#inputGrid .numberInput').forEach(input => {
-    input.addEventListener('input', generateMirrorNumbers);
-});
+// Initialize grids
+toggleGrids();
+
+// Service Worker registration
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js').then(registration => {
+            console.log('Service Worker registered with scope:', registration.scope);
+        }).catch(error => {
+            console.error('Service Worker registration failed:', error);
+        });
+    });
+}
