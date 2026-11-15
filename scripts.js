@@ -117,16 +117,17 @@ function buildCombinations(digits, length) {
     return all.slice(0, 40).map(item => item.combo);
 }
 
-// Renders one chart's results as its own section
-function renderChartSection(title, combos) {
-    let html = `<h3>${title} (${combos.length})</h3>`;
+// Builds one column of the side-by-side results
+function buildColumn(title, combos) {
+    let html = `<div class="result-column"><h3>${title}</h3>`;
     if (combos.length === 0) {
-        html += '<p class="message">No numbers in this chart yet.</p>';
-        return html;
+        html += '<p class="message">No numbers yet.</p>';
+    } else {
+        combos.forEach(combo => {
+            html += `<p>${combo.join(' ')}</p>`;
+        });
     }
-    combos.forEach(combo => {
-        html += `<p>${combo.join(' ')}</p>`;
-    });
+    html += '</div>';
     return html;
 }
 
@@ -134,19 +135,22 @@ function showResults(length) {
     const results = document.getElementById('results');
     const gameLabel = length === 3 ? 'Pick Three' : 'Pick Four';
 
-    const inputDigits = getChartDigits('inputGrid');
     const mirrorDigits = getChartDigits('mirrorGrid');
     const flipDigits = getChartDigits('flipGrid');
 
-    if (inputDigits.length === 0 && mirrorDigits.length === 0 && flipDigits.length === 0) {
+    if (mirrorDigits.length === 0 && flipDigits.length === 0) {
         results.innerHTML = '<p class="message">Enter some numbers in the grid first.</p>';
         return;
     }
 
+    const mirrorCombos = buildCombinations(mirrorDigits, length);
+    const flipCombos = buildCombinations(flipDigits, length);
+
     let html = `<h2>${gameLabel} Results</h2>`;
-    html += renderChartSection('Your Numbers', buildCombinations(inputDigits, length));
-    html += renderChartSection('Mirror Numbers', buildCombinations(mirrorDigits, length));
-    html += renderChartSection('Flip Numbers', buildCombinations(flipDigits, length));
+    html += '<div class="results-row">';
+    html += buildColumn(`Mirror Numbers (${mirrorCombos.length})`, mirrorCombos);
+    html += buildColumn(`Flip Numbers (${flipCombos.length})`, flipCombos);
+    html += '</div>';
     results.innerHTML = html;
 }
 
