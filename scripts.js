@@ -112,15 +112,11 @@ function buildCombinations(digits, length) {
 }
 
 function buildColumn(title, combos) {
-    // Colors for repeated groups
     const palette = ['#FF5733', '#33FF57', '#3357FF', '#FF33A1', '#FFD700', '#FF8C00', '#8A2BE2', '#00CED1', '#FF4500', '#ADFF2F'];
-    const separatorColor = '#D3D3D3'; // Light gray for separation
     const groupCounts = {};
     const groupColorMap = {};
     let colorIndex = 0;
-    let lastColorUsed = null;
 
-    // First pass: Count how often each group of digits appears
     combos.forEach(combo => {
         const groupKey = [...combo].sort((a, b) => a - b).join('');
         groupCounts[groupKey] = (groupCounts[groupKey] || 0) + 1;
@@ -129,25 +125,15 @@ function buildColumn(title, combos) {
     let html = `<div class="result-column" style="padding: 10px; margin-bottom: 10px;"><h3>${title}</h3>`;
     const groupedSections = {};
 
-    // Second pass: Build HTML for each group with assigned colors
     combos.forEach(combo => {
         const groupKey = [...combo].sort((a, b) => a - b).join('');
         
         if (groupCounts[groupKey] > 1) {
-            // Assign a color if it's a repeat and doesn't have one yet
             if (!groupColorMap[groupKey]) {
                 groupColorMap[groupKey] = palette[colorIndex % palette.length];
                 colorIndex++;
             }
             const color = groupColorMap[groupKey];
-
-            // Insert separator if the color is reused
-            if (color === lastColorUsed) {
-                groupedSections[separatorColor] = groupedSections[separatorColor] || [];
-                groupedSections[separatorColor].push(`<div style="background-color: ${separatorColor}; padding: 5px; margin-bottom: 5px;">&nbsp;</div>`);
-            }
-            lastColorUsed = color;
-
             const groupHtml = `<div style="background-color: ${color}; padding: 5px; margin-bottom: 5px;">${combo.join(' ')}</div>`;
 
             if (!groupedSections[color]) {
@@ -160,7 +146,6 @@ function buildColumn(title, combos) {
         }
     });
 
-    // Render grouped sections
     for (const color in groupedSections) {
         if (groupedSections[color].length > 0) {
             html += `<div style="border-left: 5px solid ${color}; margin-bottom: 10px;">`;
