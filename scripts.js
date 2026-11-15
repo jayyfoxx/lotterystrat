@@ -76,23 +76,43 @@ function getEnteredDigits() {
         .map(value => parseInt(value, 10));
 }
 
-// Ranks entered digits by how often they appear, then builds combinations
+// Builds every possible combination of the entered digits, scores each one
+// by how often its digits appear, and returns the top 40 (no repeats)
 function buildCombinations(length) {
     const digits = getEnteredDigits();
     const counts = {};
     digits.forEach(d => counts[d] = (counts[d] || 0) + 1);
 
-    const ranked = Object.keys(counts)
-        .map(Number)
-        .sort((a, b) => counts[b] - counts[a] || a - b);
+    const uniqueDigits = Object.keys(counts).map(Number);
+    const all = [];
 
-    const combos = [];
-    for (let i = 0; i < 20 && ranked.length > 0; i++) {
-        const combo = [];
-        for (let j = 0; j < length; j++) {
-            combo.push(ranked[(i + j) % ranked.length]);
+    function build(prefix) {
+        if (prefix.length === length) {
+            const score = prefix.reduce((sum, d) => sum + counts[d], 0);
+            all.push({ combo: prefix.slice(), score: score });
+            return;
         }
-        combos.push(combo);
+        uniqueDigits.forEach(d => {
+            prefix.push(d);
+            build(prefix);
+            prefix.pop();
+        });
+    }
+
+    if (uniqueDigits.length > 0) {
+        build([]);
+    }
+
+    all.sort((a, b) => b.score - a.score || a.combo.join('').localeCompare(b.combo.join('')));
+
+    const seen = new Set();
+    const combos = [];
+    for (const item of all) {
+        const key = item.combo.join('');
+        if (seen.has(key)) continue;
+        seen.add(key);
+        combos.push(item.combo);
+        if (combos.length === 40) break;
     }
     return combos;
 }
@@ -107,7 +127,7 @@ function showResults(length) {
     }
 
     const combos = buildCombinations(length);
-    let html = `<h3>${label} Combinations</h3>`;
+    let html = `<h3>${label} Combinations (${combos.length})</h3>`;
     combos.forEach(combo => {
         const line = combo.join(' ');
         const mirrored = combo.map(d => mirrorDigit(d)).join(' ');
@@ -117,9 +137,19 @@ function showResults(length) {
     results.innerHTML = html;
 }
 
+// Resets all grids to empty and clears the results
+function clearAll() {
+    document.querySelectorAll('#inputGrid .cell, #mirrorGrid .cell, #flipGrid .cell')
+        .forEach(cell => cell.value = '');
+    document.getElementById('results').innerHTML = '';
+}
+
 document.getElementById('generateBtn').addEventListener('click', () => {
     showResults(getSize());
 });
+
+document.getElementById('clearTopBtn').addEventListener('click', clearAll);
+document.getElementById('clearBottomBtn').addEventListener('click', clearAll);
 
 document.querySelectorAll('input[name="gameType"]').forEach(radio => {
     radio.addEventListener('change', buildGrids);
