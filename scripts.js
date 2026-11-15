@@ -117,14 +117,36 @@ function buildCombinations(digits, length) {
     return all.slice(0, 40).map(item => item.combo);
 }
 
+// Groups combinations that use the same digits (any order) and returns
+// a Set of the combination keys that appear more than once
+function findRepeatedKeys(combos) {
+    const groupCounts = {};
+    combos.forEach(combo => {
+        const groupKey = [...combo].sort((a, b) => a - b).join('');
+        groupCounts[groupKey] = (groupCounts[groupKey] || 0) + 1;
+    });
+
+    const repeated = new Set();
+    combos.forEach(combo => {
+        const groupKey = [...combo].sort((a, b) => a - b).join('');
+        if (groupCounts[groupKey] > 1) {
+            repeated.add(combo.join(''));
+        }
+    });
+    return repeated;
+}
+
 // Builds one column of the side-by-side results
 function buildColumn(title, combos) {
     let html = `<div class="result-column"><h3>${title}</h3>`;
     if (combos.length === 0) {
         html += '<p class="message">No numbers yet.</p>';
     } else {
+        const repeated = findRepeatedKeys(combos);
         combos.forEach(combo => {
-            html += `<p>${combo.join(' ')}</p>`;
+            const key = combo.join('');
+            const cls = repeated.has(key) ? ' class="repeat-highlight"' : '';
+            html += `<p${cls}>${combo.join(' ')}</p>`;
         });
     }
     html += '</div>';
