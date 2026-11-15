@@ -108,14 +108,22 @@ function buildCombinations(digits, length) {
         b.score - a.score || a.combo.join('').localeCompare(b.combo.join(''))
     );
 
-    return all.slice(0, 40).map(item => item.combo);
+    // Ensure no zero is enforced if not present in the input
+    const filteredCombinations = all.filter(combo =>
+        !combo.combo.includes(0) || counts[0] > 0
+    );
+
+    return filteredCombinations.slice(0, 40).map(item => item.combo);
 }
 
 function buildColumn(title, combos) {
     const palette = ['#FF5733', '#33FF57', '#3357FF', '#FF33A1', '#FFD700', '#FF8C00', '#8A2BE2', '#00CED1', '#FF4500', '#ADFF2F'];
+    const separatorColor = '#D3D3D3'; // Light gray for separation
     const groupCounts = {};
     const groupColorMap = {};
     let colorIndex = 0;
+    let lastColorUsed = null;
+    let recentColors = [];
 
     combos.forEach(combo => {
         const groupKey = [...combo].sort((a, b) => a - b).join('');
@@ -130,10 +138,27 @@ function buildColumn(title, combos) {
         
         if (groupCounts[groupKey] > 1) {
             if (!groupColorMap[groupKey]) {
-                groupColorMap[groupKey] = palette[colorIndex % palette.length];
-                colorIndex++;
+                let color;
+                do {
+                    color = palette[colorIndex % palette.length];
+                    colorIndex++;
+                } while (recentColors.includes(color) && recentColors.length < palette.length);
+
+                groupColorMap[groupKey] = color;
+                recentColors.push(color);
+
+                if (recentColors.length > palette.length) {
+                    recentColors.shift(); // Maintain a fixed length of recent colors
+                }
             }
             const color = groupColorMap[groupKey];
+
+            if (color === lastColorUsed) {
+                groupedSections[separatorColor] = groupedSections[separatorColor] || [];
+                groupedSections[separatorColor].push(`<div style="background-color: ${separatorColor}; padding: 5px; margin-bottom: 5px;">&nbsp;</div>`);
+            }
+            lastColorUsed = color;
+
             const groupHtml = `<div style="background-color: ${color}; padding: 5px; margin-bottom: 5px;">${combo.join(' ')}</div>`;
 
             if (!groupedSections[color]) {
@@ -157,6 +182,36 @@ function buildColumn(title, combos) {
     }
     html += '</div>';
     return html;
+}
+
+// Fixed Random Generation Logic
+function buildCombinations(digits, length) {
+    if (digits.length < length) return [];
+    
+    const results = [];
+    const seen = new Set();
+    
+    // Generate 40 unique random combinations
+    while (results.length < 40) {
+        let combo = [];
+        let pool = [...digits];
+        
+        for (let i = 0; i < length; i++) {
+            const randomIndex = Math.floor(Math.random() * pool.length);
+            combo.push(pool.splice(randomIndex, 1)[0]);
+        }
+        
+        const comboKey = combo.sort((a, b) => a - b).join('');
+        if (!seen.has(comboKey)) {
+            results.push(combo);
+            seen.add(comboKey);
+        }
+        
+        // Safety break if we run out of unique combinations
+        if (results.length >= 40) break;
+    }
+    
+    return results;
 }
 
 function showResults(length) {
@@ -201,10 +256,3 @@ document.querySelectorAll('input[name="gameType"]').forEach(radio => {
 
 buildGrids();
 
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('service-worker.js')
-            .then(reg => console.log('Service Worker registered:', reg.scope))
-            .catch(err => console.error('Service Worker registration failed:', err));
-    });
-}
