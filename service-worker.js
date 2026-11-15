@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lottery-strategy-cache-v14';
+const CACHE_NAME = 'lottery-strategy-cache-v15';
 const urlsToCache = [
     '/',
     '/index.html',
