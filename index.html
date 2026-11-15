@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lottery Strategy</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Lottery Strategy</h1>
+        <div class="grids">
+            <div class="grid" id="inputGrid">
+                <h2>Input Numbers</h2>
+                <!-- 5x5 grid for input -->
+                <div class="numbers">
+                    <!-- Generate 5x5 grid with input fields -->
+                    <script>
+                        for (let i = 0; i < 25; i++) {
+                            document.write('<input type="number" min="0" max="9" class="numberInput" />');
+                        }
+                    </script>
+                </div>
+            </div>
+            <div class="grid" id="mirrorGrid">
+                <h2>Mirror Numbers</h2>
+                <!-- 5x5 grid for mirrored numbers -->
+                <div class="numbers">
+                    <!-- Placeholder grid; will be filled by JavaScript -->
+                    <script>
+                        for (let i = 0; i < 25; i++) {
+                            document.write('<input type="text" readonly class="numberInput" />');
+                        }
+                    </script>
+                </div>
+            </div>
+        </div>
+        <div class="controls">
+            <button onclick="generatePickThree()">Generate Pick Three</button>
+            <button onclick="generatePickFour()">Generate Pick Four</button>
+        </div>
+        <div id="results">
+            <h2>Results</h2>
+            <div id="pickThreeResults"></div>
+            <div id="pickFourResults"></div>
+        </div>
+    </div>
+    <script src="scripts.js"></script>
+</body>
+</html>
