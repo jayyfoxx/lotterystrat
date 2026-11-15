@@ -192,3 +192,9 @@ button:hover {
     border-bottom: 2px solid #00FF00;
     padding-bottom: 6px;
 }
+.repeat-highlight {
+    color: #00FF00 !important;
+    font-weight: bold;
+    border-left-color: #00FF00;
+    box-shadow: 0 0 8px rgba(0, 255, 0, 0.6);
+}
