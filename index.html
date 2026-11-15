@@ -1,53 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lottery Strategy</title>
-    <link rel="stylesheet" href="styles.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pick 3 / Pick 4 Number Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Lottery Strategy</h1>
-
-        <div class="mode-switch">
-            <label>
-                <input type="radio" name="gameType" value="3" checked>
-                Pick Three
-            </label>
-            <label>
-                <input type="radio" name="gameType" value="4">
-                Pick Four
-            </label>
-        </div>
-
-        <div class="top-controls">
-            <button id="clearTopBtn" type="button" class="clear-btn">Clear</button>
-        </div>
-
-        <div class="boards">
-            <div class="board">
-                <h2>Your Numbers</h2>
-                <div class="grid" id="inputGrid"></div>
-            </div>
-            <div class="board">
-                <h2>Mirror Numbers</h2>
-                <div class="grid" id="mirrorGrid"></div>
-            </div>
-            <div class="board">
-                <h2>Flip Numbers</h2>
-                <div class="grid" id="flipGrid"></div>
-            </div>
-        </div>
-
-        <div class="bottom-controls">
-            <button id="generateBtn" type="button">Generate</button>
-            <button id="clearBottomBtn" type="button" class="clear-btn">Clear</button>
-        </div>
-
-        <div id="results"></div>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="logo">#</div>
+      <div>
+        <h1>Pick <span>3</span> / Pick <span>4</span> Generator</h1>
+        <p class="sub">Enter your numbers. Mirror and Flip charts fill in automatically.</p>
+      </div>
     </div>
+    <div class="seg" role="radiogroup" aria-label="Game type">
+      <input type="radio" name="gameType" id="g3" value="3" checked>
+      <label for="g3">Pick 3</label>
+      <input type="radio" name="gameType" id="g4" value="4">
+      <label for="g4">Pick 4</label>
+    </div>
+  </header>
 
-    <script src="scripts.js"></script>
+  <section class="charts">
+    <div class="panel chart input-chart">
+      <div class="chart-head"><h2>Your Numbers</h2><span class="tag">INPUT</span></div>
+      <p class="note">Type, paste, or use arrow keys</p>
+      <div class="grid" id="yourGrid"></div>
+    </div>
+    <div class="panel chart">
+      <div class="chart-head"><h2>Mirror Numbers</h2><span class="tag">+5</span></div>
+      <p class="note">0↔5 · 1↔6 · 2↔7 · 3↔8 · 4↔9</p>
+      <div class="grid" id="mirrorGrid"></div>
+    </div>
+    <div class="panel chart">
+      <div class="chart-head"><h2>Flip Numbers</h2><span class="tag">+3</span></div>
+      <p class="note">0→3 · 1→4 · 2→5 … 7→0 · 8→1 · 9→2</p>
+      <div class="grid" id="flipGrid"></div>
+    </div>
+  </section>
+
+  <div class="actions">
+    <button class="primary" id="generateBtn">Generate 120 Numbers</button>
+    <button id="copyAllBtn">Copy All</button>
+    <button id="clearBtn">Clear</button>
+  </div>
+
+  <section id="results">
+    <div class="panel placeholder">Fill in <strong>Your Numbers</strong>, then hit <strong>Generate</strong>.<br>You'll get 40 numbers from each chart, with matching numbers grouped by color.</div>
+  </section>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="script.js"></script>
 </body>
 </html>
